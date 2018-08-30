@@ -1,0 +1,82 @@
+# This is the default ansible 'hosts' file.
+#
+# It should live in /etc/ansible/hosts
+#
+#   - Comments begin with the '#' character
+#   - Blank lines are ignored
+#   - Groups of hosts are delimited by [header] elements
+#   - You can enter hostnames or ip addresses
+#   - A hostname/ip can be a member of multiple groups
+
+# Ex 1: Ungrouped hosts, specify before any group headers.
+
+## green.example.com
+## blue.example.com
+## 192.168.100.1
+## 192.168.100.10
+
+# Ex 2: A collection of hosts belonging to the 'webservers' group
+
+## [webservers]
+## alpha.example.org
+## beta.example.org
+## 192.168.1.100
+## 192.168.1.110
+
+# If you have multiple hosts following a pattern you can specify
+# them like this:
+
+## www[001:006].example.com
+
+# Ex 3: A collection of database servers in the 'dbservers' group
+
+## [dbservers]
+## 
+## db01.intranet.mydomain.net
+## db02.intranet.mydomain.net
+## 10.25.1.56
+## 10.25.1.57
+
+# Here's another example of host ranges, this time there are no
+# leading 0s:
+
+## db-[99:101]-node.example.com
+[OSEv3:children]
+masters
+nodes
+etcd
+
+# Set variables common for all OSEv3 hosts
+[OSEv3:vars]
+# SSH user, this user should allow ssh based auth without requiring a password
+ansible_ssh_user=root
+
+# If ansible_ssh_user is not root, ansible_become must be set to true
+#ansible_become=true
+
+openshift_deployment_type=origin
+
+openshift_release="3.9"
+openshift_image_tag=v3.9.0
+# uncomment the following to enable htpasswd authentication; defaults to DenyAllPasswordIdentityProvider
+#openshift_master_identity_providers=[{'name': 'htpasswd_auth', 'login': 'true', 'challenge': 'true', 'kind': 'HTPasswdPasswordIdentityProvider', 'filename': '/etc/origin/master/htpasswd'}]
+
+openshift_master_default_subdomain=apps.openshift.local
+openshift_docker_insecure_registries=172.30.33.0/16
+
+openshift_disable_check = memory_availability,disk_availability
+
+# host group for masters
+[masters]
+master33.openshift.local openshift_schedulable=true containerized=false openshift_hostname=master33.openshift.local openshift_public_hostname=master33.openshift.local openshift_public_ip=10.33.33.90
+
+# host group for etcd
+[etcd]
+master33.openshift.local
+
+# host group for nodes, includes region info
+[nodes]
+master33.openshift.local openshift_node_labels="{'region': 'infra', 'zone': 'default'}"
+node33.openshift.local openshift_node_labels="{'region': 'primary', 'zone': 'east'}" openshift_schedulable=true openshift_hostname=node33.openshift.local openshift_public_hostname=node33.openshift.local openshift_public_ip=10.1.1.91
+
+
